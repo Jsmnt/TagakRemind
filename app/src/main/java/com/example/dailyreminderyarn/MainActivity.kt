@@ -44,7 +44,7 @@ class MainActivity : ComponentActivity() {
 fun ReminderApp(db: AppDatabase, scheduler: NotificationScheduler) {
     var activeReminder by remember { mutableStateOf<Reminder?>(null) }
     var showAddScreen by remember { mutableStateOf(false) }
-    var reminderList by remember { mutableStateOf(db.reminderDao().getAll()) }
+    var reminderList by remember { mutableStateOf(db.reminderDao().getAll().sortedBy { it.timeInMillis }) }
 
     if (showAddScreen) {
         AddReminderScreen(
@@ -71,7 +71,7 @@ fun ReminderApp(db: AppDatabase, scheduler: NotificationScheduler) {
                 }
 
                 scheduler.scheduleNotification(reminderToSave)
-                reminderList = db.reminderDao().getAll()
+                reminderList = db.reminderDao().getAll().sortedBy { it.timeInMillis }
                 showAddScreen = false
                 activeReminder = null
             },
@@ -89,7 +89,7 @@ fun ReminderApp(db: AppDatabase, scheduler: NotificationScheduler) {
             },
             onDeleteClicked = { reminder ->
                 db.reminderDao().delete(reminder)
-                reminderList = db.reminderDao().getAll()
+                reminderList = db.reminderDao().getAll().sortedBy { it.timeInMillis }
             },
             onEditClicked = { reminder ->
                 activeReminder = reminder
@@ -99,7 +99,7 @@ fun ReminderApp(db: AppDatabase, scheduler: NotificationScheduler) {
                 val updatedReminder = reminder.copy(isCompleted = !reminder.isCompleted)
                 db.reminderDao().delete(reminder)
                 db.reminderDao().insert(updatedReminder)
-                reminderList = db.reminderDao().getAll()
+                reminderList = db.reminderDao().getAll().sortedBy { it.timeInMillis }
             }
         )
     }
